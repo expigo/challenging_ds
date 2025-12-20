@@ -3,5 +3,5 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 DATA_DIR = PROJECT_ROOT / "data"
-TRAIN_DATA_PATH = PROJECT_ROOT / "train.parquet"
-TEST_DATA_PATH = PROJECT_ROOT / "test.parquet"
+TRAIN_DATA_PATH = DATA_DIR / "train.parquet"
+TEST_DATA_PATH = DATA_DIR / "test.parquet"
