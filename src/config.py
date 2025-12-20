@@ -1,4 +1,5 @@
 from pathlib import Path
+from enum import Enum
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -25,3 +26,25 @@ CATEGORICAL_FEATURES = ['FavoriteColor', 'Hobby']
 TARGET_FEATURE = 'Default'
 
 ALL_FEATURES = NUMERICAL_FEATURES + ORDINAL_FEATURES + CATEGORICAL_FEATURES
+
+class Color(Enum):
+    """
+    Standard color palette for all visualizations.
+    """
+    BLACK = "black"
+    RED = "orangered"        # Used for negative outcomes, warnings, defaults
+    GREEN = "limegreen"      # Used for positive outcomes, solvent customers
+    BLUE = "cornflowerblue"  # Used for neutral information, presence
+    GRAY = "darkgray"        # Used for background elements, missing data
+    YELLOW = "gold"          # Used for highlights, attention
+
+    @classmethod
+    def get_default_palette(cls):
+        """Returns a list of colors suitable for categorical data."""
+        return [cls.BLUE.value, cls.RED.value, cls.GREEN.value,
+                cls.YELLOW.value, cls.GRAY.value]
+
+    @classmethod
+    def get_binary_palette(cls):
+        """Returns colors for binary outcomes."""
+        return [cls.GREEN.value, cls.RED.value]
