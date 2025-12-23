@@ -178,6 +178,34 @@ def preprocess_data(
 
     return X_train_processed, X_test_processed, y_train, y_test
 
+def save_pipeline(pipeline: Pipeline, filepath: Path) -> None:
+    """
+    Save fitted pipeline to disk.
+    
+    Args:
+        pipeline: Fitted sklearn Pipeline
+        filepath: Path to save pickle file
+    """
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    with open(filepath, 'wb') as f:
+        pickle.dump(pipeline, f)
+    print(f"✓ Pipeline saved to {filepath}")
+
+
+def load_pipeline(filepath: Path) -> Pipeline:
+    """
+    Load fitted pipeline from disk.
+    
+    Args:
+        filepath: Path to pickle file
+        
+    Returns:
+        Fitted sklearn Pipeline
+    """
+    with open(filepath, 'rb') as f:
+        pipeline = pickle.load(f)
+    return pipeline
+
 
 if __name__ == "__main__":
     from src.data_loader import load_data
