@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import pickle
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, List
 
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
@@ -166,9 +166,11 @@ def preprocess_data(
     if pipeline_type == 'A':
         pipeline = get_pipeline_A()
         pipeline.fit(X_train)
+        feature_names = get_feature_names_A()
     elif pipeline_type == 'B':
         pipeline = get_pipeline_B()
         pipeline.fit(X_train)
+        feature_names = get_feature_names_B(pipeline)
     else:
         raise ValueError("pipeline_type must be 'A' or 'B'")
 
@@ -176,7 +178,7 @@ def preprocess_data(
     X_train_processed = pipeline.transform(X_train)
     X_test_processed = pipeline.transform(X_test)
 
-    return X_train_processed, X_test_processed, y_train, y_test
+    return X_train_processed, X_test_processed, y_train, y_test, feature_names
 
 def save_pipeline(pipeline: Pipeline, filepath: Path) -> None:
     """
@@ -206,6 +208,37 @@ def load_pipeline(filepath: Path) -> Pipeline:
         pipeline = pickle.load(f)
     return pipeline
 
+def get_feature_names_A() -> List[str]:
+    """
+    Get feature names for Pipeline A output.
+
+    Returns:
+        List of 8 feature names in order
+    """
+    return NUMERICAL_FEATURES + ORDINAL_FEATURES
+
+
+def get_feature_names_B(pipeline: Pipeline) -> List[str]:
+    """
+    Extract feature names from fitted Pipeline B.
+
+    Args:
+        pipeline: Fitted Pipeline B object
+
+    Returns:
+        List of 14 feature names in order
+    """
+    preprocessor = pipeline.named_steps['preprocessor']
+
+    # Numerical and ordinal features (same as input)
+    num_ord_features = NUMERICAL_FEATURES + ORDINAL_FEATURES
+
+    # One-hot encoded categorical features
+    onehot_encoder = preprocessor.named_transformers_['categorical'].named_steps['onehot']
+    cat_features = onehot_encoder.get_feature_names_out(CATEGORICAL_FEATURES)
+
+    return num_ord_features + list(cat_features)
+
 
 if __name__ == "__main__":
     from src.data_loader import load_data
@@ -215,22 +248,25 @@ if __name__ == "__main__":
     
     # test pipeline A
     print("\n>> testing pipeline A...")
-    X_train_A, X_test_A, y_train, y_test = preprocess_data(
+    X_train_A, X_test_A, y_train, y_test, feature_names_A = preprocess_data(
             train_df, test_df, pipeline_type='A'
     )
 
     print(f"Out shape: {X_train_A.shape}")
-    print(f"features: {X_test_A.shape}")
+    print(f"features shape: {X_test_A.shape}")
+    print(f"feature names: {feature_names_A}")
+
 
 
     # test pipeline B
     print("\n>> testing pipeline B...")
-    X_train_B, X_test_B, y_train, y_test = preprocess_data(
+    X_train_B, X_test_B, y_train, y_test, feature_names_B = preprocess_data(
             train_df, test_df, pipeline_type='B'
     )
 
     print(f"Out shape: {X_train_B.shape}")
     print(f"features: {X_test_B.shape}")
+    print(f"feature names: {feature_names_B}")
 
     print("\nAll good!")
 
