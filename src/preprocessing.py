@@ -191,7 +191,7 @@ def save_pipeline(pipeline: Pipeline, filepath: Path) -> None:
     filepath.parent.mkdir(parents=True, exist_ok=True)
     with open(filepath, 'wb') as f:
         pickle.dump(pipeline, f)
-    print(f"✓ Pipeline saved to {filepath}")
+    print(f"Pipeline saved to {filepath}")
 
 
 def load_pipeline(filepath: Path) -> Pipeline:
@@ -255,8 +255,7 @@ if __name__ == "__main__":
     print(f"Out shape: {X_train_A.shape}")
     print(f"features shape: {X_test_A.shape}")
     print(f"feature names: {feature_names_A}")
-
-
+    print(len(feature_names_A))
 
     # test pipeline B
     print("\n>> testing pipeline B...")
