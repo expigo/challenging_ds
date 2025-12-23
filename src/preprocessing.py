@@ -85,6 +85,54 @@ def get_pipeline_A() -> Pipeline:
     return pipeline
 
 
+def get_pipeline_B() -> Pipeline:
+    """
+    Create full piepline (full features with one-hot encoding)
+
+    Features: 7 numerical + 1 ordinal + 6 one-hot
+
+    Processing steps:
+    1. Numerical features: Median imputation + Standard Scaler
+    2. Oridnal features: Most freq imputation, no scaling
+    3. Categorical features: One-hot encoding (drop first category)
+
+    Returns:
+        sklearn Pipeline obj
+    """
+
+    # numerical features
+    numerical_pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler())
+    ])
+
+    # ordinal
+    ordinal_pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy="most_frequent"))
+    ])
+
+    categorical_pipeline = Pipeline([
+        ('onehot', OneHotEncoder(
+            drop='first',
+            sparse_output=False,
+            handle_unknown='ignore'
+        ))
+    ])
+
+    # combine transforms
+    preprocessor = ColumnTransformer([
+        ('numerical', numerical_pipeline, NUMERICAL_FEATURES),
+        ('ordinal', ordinal_pipeline, ORDINAL_FEATURES),
+        ('categorical', categorical_pipeline, CATEGORICAL_FEATURES),
+    ], remainder='drop') # drop categorical
+
+    pipeline = Pipeline([
+        ('preprocessor', preprocessor)
+    ])
+
+    return pipeline
+
+
 if __name__ == "__main__":
     from src.data_loader import load_data
 
