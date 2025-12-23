@@ -10,6 +10,8 @@ TEST_DATA_PATH = DATA_DIR / "test.parquet"
 OUTPUT_DIR = PROJECT_ROOT / "output"
 FIGURES_DIR = OUTPUT_DIR / "figures"
 RESULTS_DIR = OUTPUT_DIR / "results"
+PROCESSED_DIR = OUTPUT_DIR / "processed_data"
+PIPELINE_DIR = OUTPUT_DIR / "preprocessors"
 
 RANDOM_SEED = 42
 
