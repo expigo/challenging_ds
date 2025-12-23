@@ -13,13 +13,14 @@ Based on Phase 1 EDA:
 
 import numpy as np
 import pandas as pd
+import pickle
 from pathlib import Path
+from typing import Tuple
 
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-import pickle
 
 from src.config import (
     NUMERICAL_FEATURES,
@@ -133,31 +134,76 @@ def get_pipeline_B() -> Pipeline:
     return pipeline
 
 
+def preprocess_data(
+        train_df: pd.DataFrame,
+        test_df: pd.DataFrame,
+        pipeline_type: str = 'A'
+        ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Complete preprocessing pipeline.
+
+    Args:
+        train_df: train DataFrame
+        test_df: test DataFrame
+        pipeline_type: 'A' or 'B' (full)
+
+    Returns:
+        Tuple of (X_train, X_test, y_train, y_test)
+    """
+    
+    # fix data quality issues
+    train_df = fix_negative_values(train_df)
+    test_df = fix_negative_values(test_df)
+
+    # separate features and target
+    X_train = train_df.drop(columns=[TARGET_FEATURE])
+    y_train = train_df[TARGET_FEATURE].values
+
+    X_test = test_df.drop(columns=[TARGET_FEATURE])
+    y_test = test_df[TARGET_FEATURE].values
+
+    # Get and fit pipeline
+    if pipeline_type == 'A':
+        pipeline = get_pipeline_A()
+        pipeline.fit(X_train)
+    elif pipeline_type == 'B':
+        pipeline = get_pipeline_B()
+        pipeline.fit(X_train)
+    else:
+        raise ValueError("pipeline_type must be 'A' or 'B'")
+
+    # transform
+    X_train_processed = pipeline.transform(X_train)
+    X_test_processed = pipeline.transform(X_test)
+
+    return X_train_processed, X_test_processed, y_train, y_test
+
+
 if __name__ == "__main__":
     from src.data_loader import load_data
 
     print(">> testing module...")
     train_df, test_df = load_data()
     
-    train_df = fix_negative_values(train_df)
-    test_df = fix_negative_values(test_df)
-
-    # separate features and target
-    X_train = train_df.drop(columns=[TARGET_FEATURE])
-    Y_train = train_df[TARGET_FEATURE].values
-
-    X_test = test_df.drop(columns=[TARGET_FEATURE])
-    Y_test = test_df[TARGET_FEATURE].values
-
     # test pipeline A
-    print(">> testing pipeline A...")
-    pipeline = get_pipeline_A()
-    pipeline.fit(X_train)
+    print("\n>> testing pipeline A...")
+    X_train_A, X_test_A, y_train, y_test = preprocess_data(
+            train_df, test_df, pipeline_type='A'
+    )
 
-    X_train_processed = pipeline.transform(X_train)
-    X_test_processed = pipeline.transform(X_test)
-
-    print("All good!")
+    print(f"Out shape: {X_train_A.shape}")
+    print(f"features: {X_test_A.shape}")
 
 
-                            
+    # test pipeline B
+    print("\n>> testing pipeline B...")
+    X_train_B, X_test_B, y_train, y_test = preprocess_data(
+            train_df, test_df, pipeline_type='B'
+    )
+
+    print(f"Out shape: {X_train_B.shape}")
+    print(f"features: {X_test_B.shape}")
+
+    print("\nAll good!")
+
+
